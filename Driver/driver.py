@@ -30,7 +30,7 @@ class Joystick():
         self.fb_Diff = AnalogIn(adc, ADS.P0, ADS.P1)
         self.lr_Diff = AnalogIn(adc, ADS.P2, ADS.P3)
 
-    def getForwardBackward(self):
+    def __get_forward_backward(self):
         """Gets raw FB values.
         As two sensors are being read, this will return the midpoint between the two. 
 
@@ -43,7 +43,7 @@ class Joystick():
         fbd = self.fb_Diff.value/16 # Difference between Forward sensor 1 and 2
         return fb1-fbd/2 # Overall forward
     
-    def getLeftRight(self):
+    def __get_left_right(self):
         """Gets raw LR values.
         As two sensors are being read, this will return the midpoint between the two. 
 
@@ -54,7 +54,7 @@ class Joystick():
         lrd = self.lr_Diff.value/16 # Difference between Left sensor 1 and 2
         return lr1-lrd/2 # Overall left
 
-    def setDACVals(self,fb_1,fb_2,lr_1,lr_2):
+    def __set_DAC_vals(self,fb_1,fb_2,lr_1,lr_2):
         """Sets raw DAC values
 
         Args:
@@ -68,6 +68,23 @@ class Joystick():
         self.dac.channel_c.value = int(lr_1)
         self.dac.channel_d.value = int(lr_2)
 
+    def __deviation_lockout(self):
+        """Will lockout the joystick by simulating a joystick deviation.
+        Should be called when the joystick deviation is outside normal ranges.
+        """
+        self.__set_DAC_vals(65535,0,0,65535) # 65535 is max voltage, 0 is min. 16-bit is 65536
+
+    def set_calibration_vals(self, fb_val, lr_val):
+        """Sets the joystick calibration values.
+        Can be used to set the calibration values to known good values.
+
+        Args:
+            fb_val (int): The forward backward calibration value
+            lr_val (int): The left right calibration value
+        """
+        self.FB_CENTER = fb_val
+        self.LR_CENTER = lr_val
+
     def calibrate(self, samples = 1024):
         """Calibrates the joystick centre.
         Records a number of samples of the joystick and then uses the average as the centre.
@@ -79,19 +96,13 @@ class Joystick():
         leftCalib = []
         
         for _ in range (samples):
-            forwardCalib.append(self.getForwardBackward())
-            leftCalib.append(self.getLeftRight())
+            forwardCalib.append(self.__get_forward_backward())
+            leftCalib.append(self.__get_left_right())
 
-        self.FB_CENTER = round(sum(forwardCalib)/len(forwardCalib))
-        self.LR_CENTER = round(sum(leftCalib)/len(leftCalib))
-
-
-    def deviation_lockout(self):
-        """Will lockout the joystick by simulating a joystick deviation.
-        Should be called when the joystick deviation is outside normal ranges.
-        """
-        self.setDACVals(65535,0,0,65535) # 65535 is max voltage, 0 is min. 16-bit is 65536
-
+        self.__set_calibration_vals(
+            round(sum(forwardCalib)/len(forwardCalib)),
+            round(sum(leftCalib)/len(leftCalib))
+        )
 
     def getPercent(self):
         """Gets the joystick values as a percentage between -100 and 100 for forward/back and left/right
@@ -103,12 +114,12 @@ class Joystick():
         fb_D = self.fb_Diff.value/16 # Difference between Forward sensor 1 and 2
         lr_D = self.lr_Diff.value/16 # Difference between Left sensor 1 and 2
 
-        fb_amount = (self.getForwardBackward()-self.FB_CENTER)/720*100
-        lr_amount = (self.getLeftRight()-self.LR_CENTER)/720*100
+        fb_amount = (self.__get_forward_backward()-self.FB_CENTER)/720*100
+        lr_amount = (self.__get_left_right()-self.LR_CENTER)/720*100
 
         ## Deviation error detection
         if (fb_D >= self.DEVIATION_ERROR or lr_D >= self.DEVIATION_ERROR):
-            self.deviation_lockout()
+            self.__deviation_lockout()
 
         return(fb_amount,lr_amount)
 
@@ -123,6 +134,6 @@ class Joystick():
         fb_amount = (16 * ((fb/100*720) + self.FB_CENTER)) * 2
         lr_amount = (16 * ((lr/100*720) + self.LR_CENTER)) * 2
 
-        self.setDACVals(fb_amount, fb_amount, lr_amount, lr_amount)
+        self.__set_DAC_vals(fb_amount, fb_amount, lr_amount, lr_amount)
 
         return(fb_amount, lr_amount)
