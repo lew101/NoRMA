@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-import time
 from geometry_msgs.msg import Twist
 from driver import Joystick
 
@@ -30,11 +29,11 @@ class Wheelchair_virtual_joystick_driver:
             self.joystick.set_calibration_values(calib_fb, calib_lr)
         rospy.loginfo("Calibration complete")
         
-        self.joystick.set_percent(0,0)
+        self.stop()
 
         rospy.Subscriber('/cmd_vel', Twist, self.on_twist)
 
-    def __stop(self):
+    def stop(self):
         """Called when the wrapper is stopping.
         Will set virtual joystick to 0,0 to stop the motors.
         """
@@ -55,7 +54,7 @@ if __name__ == "__main__":
     rospy.init_node("wheelchair_virtual_joystick_driver")
 
     wrapper = Wheelchair_virtual_joystick_driver()
-    rospy.on_shutdown(wrapper.__stop())
+    rospy.on_shutdown(wrapper.stop)
 
     rospy.loginfo("Joystick driver running. Controller can be turned on")
     rospy.spin()

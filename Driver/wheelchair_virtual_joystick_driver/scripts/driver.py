@@ -1,4 +1,3 @@
-from re import L
 import board
 import busio
 import adafruit_ads1x15.ads1015 as ADS
@@ -99,7 +98,7 @@ class Joystick():
             forwardCalib.append(self.__get_forward_backward())
             leftCalib.append(self.__get_left_right())
 
-        self.__set_calibration_vals(
+        self.set_calibration_vals(
             round(sum(forwardCalib)/len(forwardCalib)),
             round(sum(leftCalib)/len(leftCalib))
         )
