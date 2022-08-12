@@ -104,7 +104,7 @@ class Joystick():
             round(sum(leftCalib)/len(leftCalib))
         )
 
-    def getPercent(self):
+    def get_percent(self):
         """Gets the joystick values as a percentage between -100 and 100 for forward/back and left/right
         
         Returns:
@@ -123,7 +123,7 @@ class Joystick():
 
         return(fb_amount,lr_amount)
 
-    def setPercent(self, fb, lr):
+    def set_percent(self, fb, lr):
         """Sets the position of the virtual joystick as a percentage between -100 and 100.
 
         Args:
