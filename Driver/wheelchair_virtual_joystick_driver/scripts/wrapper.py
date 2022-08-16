@@ -48,7 +48,9 @@ class Wheelchair_virtual_joystick_driver:
         x = msg.linear.x
         z = msg.angular.z
 
+        rospy.loginfo("X = {}, Z = {}".format(10*x, 10*z))
         self.joystick.set_percent(10*x,10*z)
+
 
 if __name__ == "__main__":
     rospy.init_node("wheelchair_virtual_joystick_driver")
