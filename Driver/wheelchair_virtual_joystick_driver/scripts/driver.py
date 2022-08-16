@@ -116,6 +116,9 @@ class Joystick():
         fb_amount = (self.__get_forward_backward()-self.FB_CENTER)/720*100
         lr_amount = (self.__get_left_right()-self.LR_CENTER)/720*100
 
+        # Invert LR so it aligns with twist
+        lr_amount = (-lr_amount)
+
         ## Deviation error detection
         if (fb_D >= self.DEVIATION_ERROR or lr_D >= self.DEVIATION_ERROR):
             self.__deviation_lockout()
@@ -132,6 +135,8 @@ class Joystick():
         Raises:
             ValueError: Thrown when the percentages are out of bounds
         """
+        # Invert LR so it aligns with twist
+        lr = -lr
 
         if ((fb > 100) or (fb < -100) or (lr > 100) or (lr < -100)):
             raise ValueError("Percentage must be within the range of -100 and 100")
