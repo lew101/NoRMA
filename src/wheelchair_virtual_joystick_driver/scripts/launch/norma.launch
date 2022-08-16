@@ -1,5 +1,5 @@
 <launch>
-    <node name="web_server" pkg="wheelchair_virtual_joystick_driver" type="wrapper.py" />
+    <node name="wheelchair_driver" pkg="wheelchair_virtual_joystick_driver" type="wrapper.py" />
 
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
     <node name="web_server" pkg="wheelchair_virtual_joystick_driver" type="launch_web_server.sh" />
