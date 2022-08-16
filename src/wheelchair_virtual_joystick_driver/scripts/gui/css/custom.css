@@ -3,7 +3,6 @@ body {
 }
 .header h1 {
     font-size: 50pt;
-    text-transform: uppercase;
 }
 
 div {
@@ -11,6 +10,6 @@ div {
 }
 
 #zone_joystick {
-    min-width: 200px;
-    min-height: 200px;
+    min-width: 400px;
+    min-height: 400px;
 }
