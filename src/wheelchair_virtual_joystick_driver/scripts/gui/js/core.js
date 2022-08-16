@@ -37,162 +37,47 @@ $( document ).ready(function() {
         messageType : 'geometry_msgs/Twist'
     });
 
+    createJoystick = function () {
+        var options = {
+        zone: document.getElementById('zone_joystick'),
+        threshold: 0.1,
+        position: { left: 50 + '%', top: 50 + '%' },
+        mode: 'static',
+        size: 300,
+        color: '#000000',
+        };
+        manager = nipplejs.create(options);
+
+        linear_speed = 0;
+        angular_speed = 0;
+
+        manager.on('start', function (event, nipple) {
+            timer = setInterval(function () {
+                move(linear_speed, angular_speed);
+            }, 25);
+        });
+
+        manager.on('end', function () {
+            if (timer) {
+                clearInterval(timer);
+            }
+            move(0, 0);
+        });
+
+        manager.on('move', function (event, nipple) {
+            max_linear = 10.0; // m/s
+            max_angular = 10.0; // rad/s
+            max_distance = 150.0; // pixels;
+            linear_speed = Math.sin(nipple.angle.radian) * max_linear * nipple.distance/max_distance;
+            angular_speed = -Math.cos(nipple.angle.radian) * max_angular * nipple.distance/max_distance;
+            
+        });
+            
+    }
+    window.onload = function () {
+        createJoystick();
+    }     
 });
-
-function retrieve_contexts() {
-    var contexts_param = new ROSLIB.Param({
-        ros : ros,
-        name :  '/alice/contexts/'
-    });
-
-    $('.contexts').html("");
-    contexts_param.get(function(value){
-        $.each(value, function( index, item ){
-            context_option = $('.templates .context').clone();
-            context_option.data('id', index);
-            context_option.html(item.name);
-            context_option.appendTo(".contexts");
-        });
-        $('.contexts .context').first().trigger('click');
-    });
-}
-
-function retrieve_speechset(set) {
-    var speechset_short_param = new ROSLIB.Param({
-        ros : ros,
-        name :  '/alice/speechsets/' + set
-    });
-
-    $('.speech-options-long, .speech-options-short').html("");
-    speechset_short_param.get(function(value){
-        $.each(value, function( index, item ){
-            $.each(item, function( name, speechset ){
-                if (name == "short") {
-                    $.each(speechset, function(i, phrase){
-                        $( ".templates .quick-speak" ).clone().html(phrase).data('phrase', phrase).appendTo(".speech-options-short");
-                    });
-                }
-                if (name == "long") {
-                    $.each(speechset, function(i, phrase){
-                        display_phrase = phrase;
-                        if (phrase.length > 60) {
-                            display_phrase = phrase.substring(0, 60) + "...";
-                        }
-                        $( ".templates .long-speak" ).clone().html(display_phrase).data('phrase', phrase).appendTo(".speech-options-long");
-                    });
-                }
-            });
-        });
-    });
-}
-
-function update_parts_list(location) {
-    if (location == 'warehouse'){
-        location_param = parts_warehouse;
-    }
-    if (location == 'requested'){
-        location_param = parts_requested;
-    }
-    if (location == 'intransit'){
-        location_param = parts_intransit;
-        $('#intransit .list-group').removeClass('d-none');
-        $('.scan-loading').addClass('d-none');
-        filename = 'media/inferred.jpg?' + Math.random();
-        $('.inferred-frame img').attr('src', filename);
-        $('.inferred-frame').removeClass('d-none');
-    }
-    if (location == 'workshop'){
-        location_param = parts_workshop;
-    }
-    retrieve_parts(location_param, location);
-}
-
-function retrieve_parts(location_param, location) {
-    $('#' + location).find('ul').empty();
-    location_param.get(function(value){
-        console.log(value);
-        $.each(value, function( index, part ){
-            part_obj = $( ".templates .part" ).clone()
-            part_obj.find('.parts-name').html(part.name)
-            part_obj.find('.parts-qty').html(part.qty)
-            part_obj.find('.parts-img').attr("src", "media/parts/" + part.id + ".png")
-            part_obj.data('id', part.id)
-            part_obj.data('model', part.model)
-            part_obj.data('qty', part.qty)
-            part_obj.find('[data-btntype="' + location + '"]').addClass('disabled')
-            part_obj.appendTo( "#" + location + " ul" );
-        });
-        update_counts();
-    });
-}
-
-function update_counts() {
-    $('.count').each(function(){
-        count = 0;
-        lis = $('#' + $(this).data('type') + ' ul').find('li');
-        lis.each(function(){
-            count += $(this).data('qty');
-        });
-        $(this).html(count);
-    });
-}
-
-function speak(message) {
-    window.speechText.publish(new ROSLIB.Message({data:message}));
-}
-
-function change_voice(voicename) {
-    window.speechVoiceName.publish(new ROSLIB.Message({data:voicename}))
-}
-
-function moveLimbs(limb_to_move) {
-    neck_move = false;
-    left_arm_move = false;
-    right_arm_move = false;
-
-    neck_pos = parseInt(-$('.neck').val());
-    left_arm_pos = parseInt($('.left-arm').val());
-    right_arm_pos = parseInt($('.right-arm').val());
-
-    switch (limb_to_move){
-        case 'neck':
-            neck_move = true;
-            break;
-
-        case 'left_arm':
-            left_arm_move = true;
-            if ($('.link-arms').data('state') == "on") {
-                right_arm_move = true;
-                right_arm_pos = left_arm_pos;
-                $('.right-arm').val(left_arm_pos)
-            }
-            break;
-
-        case 'right_arm':
-            right_arm_move = true;
-            if ($('.link-arms').data('state') == "on") {
-                left_arm_move = true;
-                left_arm_pos = right_arm_pos;
-                $('.left-arm').val(right_arm_pos)
-            }
-            break;
-
-    }
-
-    var joint_movement = new ROSLIB.Message({
-        neck: neck_move,
-        neck_to: neck_pos,
-        neck_speed: 5000,
-        left_arm: left_arm_move,
-        left_arm_to: left_arm_pos,
-        left_arm_speed: 3000,
-        right_arm: right_arm_move,
-        right_arm_to: right_arm_pos,
-        right_arm_speed: 3000
-    });
-
-    window.limbMovementPublisher.publish(joint_movement);
-}
 
 function move(linear, angular) {
     if(linear > 10) linear = 10;
