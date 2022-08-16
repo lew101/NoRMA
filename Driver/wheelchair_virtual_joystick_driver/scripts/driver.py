@@ -123,16 +123,22 @@ class Joystick():
         return(fb_amount,lr_amount)
 
     def set_percent(self, fb, lr):
-        """Sets the position of the virtual joystick as a percentage between -100 and 100.
+        """Sets the position of the virtual joystick as a percentage between -100 and 100
 
         Args:
-            fb (float): _description_
-            lr (float): _description_
+            fb (float): the percentage to set the virtual joystick to forward and back
+            lr (float): the percentage to set the virtual joystick to left and right
+
+        Raises:
+            ValueError: Thrown when the percentages are out of bounds
         """
 
-        fb_amount = (16 * ((fb/100*720) + self.FB_CENTER)) * 2
-        lr_amount = (16 * ((lr/100*720) + self.LR_CENTER)) * 2
+        if ((fb > 100) or (fb < -100) or (lr > 100) or (lr < -100)):
+            raise ValueError("Percentage must be within the range of -100 and 100")
+        else:
+            fb_amount = (16 * ((fb/100*720) + self.FB_CENTER)) * 2
+            lr_amount = (16 * ((lr/100*720) + self.LR_CENTER)) * 2
 
-        self.__set_DAC_vals(fb_amount, fb_amount, lr_amount, lr_amount)
+            self.__set_DAC_vals(fb_amount, fb_amount, lr_amount, lr_amount)
 
-        return(fb_amount, lr_amount)
+            return(fb_amount, lr_amount)

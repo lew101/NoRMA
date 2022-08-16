@@ -45,11 +45,26 @@ class Wheelchair_virtual_joystick_driver:
         Args:
             msg (geometry_msgs/Twist): ROS Twist message.
         """
-        x = msg.linear.x
-        z = msg.angular.z
+        scale = 10
+        x = (msg.linear.x) * scale
+        z = (msg.angular.z) * scale
 
-        rospy.loginfo("X = {}, Z = {}".format(10*x, 10*z))
-        self.joystick.set_percent(10*x,10*z)
+        if (x > 100):
+            rospy.loginfo("Trimming x to 100")
+            x = 100
+        if (x < -100):
+            rospy.loginfo("Trimming x to -100")
+            x = -100
+        if (z > 100):
+            rospy.loginfo("Trimming z to 100")
+            z = 100
+        if (z < -100):
+            rospy.loginfo("Trimming z to -100")
+            z = -100
+
+
+        rospy.loginfo("X = {}, Z = {}".format(x, z))
+        self.joystick.set_percent(x,z)
 
 
 if __name__ == "__main__":
