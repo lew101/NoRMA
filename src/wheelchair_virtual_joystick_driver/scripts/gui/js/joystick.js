@@ -5,7 +5,7 @@ $( document ).ready(function() {
         threshold: 0.1,
         position: { left: 50 + '%', top: 50 + '%' },
         mode: 'static',
-        size: 150,
+        size: 300,
         color: '#000000',
         };
         manager = nipplejs.create(options);
