@@ -3,8 +3,10 @@
 import rospy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Joy
-import std_msgs.msg
+from std_msgs.msg import Header
+
 from driver import Joystick
+
 
 class Wheelchair_virtual_joystick_driver:
     def __init__(self):
@@ -73,7 +75,7 @@ class Wheelchair_virtual_joystick_driver:
 
         while not rospy.is_shutdown():
             x, z = self.joystick.get_percent()
-            h = std_msgs.msg.Header()
+            h = Header()
             h.stamp = rospy.Time.now()
             
             joy = Joy()
