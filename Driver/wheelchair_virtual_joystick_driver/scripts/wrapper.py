@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 
+from threading import Lock
+
 import rospy
 from geometry_msgs.msg import Twist
+from sensor_msgs.msg import Joy
+from std_msgs.msg import Header
+
 from driver import Joystick
+
 
 class Wheelchair_virtual_joystick_driver:
     def __init__(self):
         self.joystick = Joystick()
+        self.last_message = rospy.Time.now()
 
         calib_fb = -1
         calib_lr = -1
@@ -29,12 +36,18 @@ class Wheelchair_virtual_joystick_driver:
             self.joystick.set_calibration_values(calib_fb, calib_lr)
         rospy.loginfo("Calibration complete")
         
-        self.stop()
+        self.stop_motion()
 
         rospy.Subscriber('/cmd_vel', Twist, self.on_twist)
+        self.joy_pub = rospy.Publisher('/joy', Joy, queue_size=10)
 
     def stop(self):
-        """Called when the wrapper is stopping.
+        """Called when wrapper is stopping.
+        """
+        self.stop_motion()
+
+    def stop_motion(self):
+        """Called to stop all motor motion.
         Will set virtual joystick to 0,0 to stop the motors.
         """
         self.joystick.set_percent(0,0)
@@ -62,16 +75,88 @@ class Wheelchair_virtual_joystick_driver:
             rospy.loginfo("Trimming z to -100")
             z = -100
 
-
         rospy.loginfo("X = {}, Z = {}".format(x, z))
+        self.last_message = rospy.Time.now()
         self.joystick.set_percent(x,z)
+
+    def get_last_message(self):
+        """Gets the timestamp of the last message recieved.
+
+        Returns:
+            rospy.Time: The time of the last received message as a rospy.Time instance.
+        """
+        return self.last_message
+
+    def publish_joy(self):
+        rate = rospy.Rate(10) # 10hz
+
+        while not rospy.is_shutdown():
+            x, z = self.joystick.get_percent()
+            h = Header()
+            h.stamp = rospy.Time.now()
+            
+            joy = Joy()
+            joy.header = h
+            joy.axes = [x,z]
+            joy.buttons = []
+
+            self.joy_pub.publish(joy)
+            rate.sleep()
+
+
+class Watchdog:
+    """Monitors the received messages and sends a stop command if a specific amount of time (the timeout) has past after the last message.
+    Designed to prevent runaways.
+    """
+    def __init__(self, wrapper, timeout=2):
+        """Initialises the watchdog
+
+        Args:
+            wrapper (Wheelchair_virtual_joystick_driver): The Wheelchair virtual joystick driver wrapper to check.
+            timeout (int, optional): The number of seconds to set the watchdog motor timeout to. Defaults to 2.
+        """
+        self.wrapper = wrapper
+        self._lock = Lock()
+
+        self.timeout = timeout
+
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.compare_time, oneshot=False)
+
+    def __del__(self):
+        """Destructor.
+        """
+        self.timer.shutdown()
+
+    def compare_time(self, timerEvent):
+        """Compares the current time and the time of the last message. 
+        If this is greater than 1 second or no time has been sent yet then a stop is sent.
+        """
+        if isinstance(timerEvent.last_duration, int):
+            if timerEvent.last_duration > self.timeout:
+                self.wrapper.stop_motion()
+                raise RuntimeError("Watchdog processing time is larger than timeout. Please reduce ROS operations or increase timeout.")
+
+        with self._lock: 
+            now = rospy.Time.now()
+            last_message = self.wrapper.get_last_message()
+            duration = now - last_message
+
+            if (now == 0) or (duration.to_sec() > self.timeout):
+                self.wrapper.stop_motion()
 
 
 if __name__ == "__main__":
     rospy.init_node("wheelchair_virtual_joystick_driver")
 
     wrapper = Wheelchair_virtual_joystick_driver()
+    watchdog = Watchdog(wrapper)
     rospy.on_shutdown(wrapper.stop)
 
     rospy.loginfo("Joystick driver running. Controller can be turned on")
+
+    try:
+        wrapper.publish_joy()
+    except rospy.ROSInterruptException:
+        pass
+
     rospy.spin()
