@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 __author__      = "Lewis Christopher Brand"
 __copyright__ = "Copyright 2022, The University of Nottingham"
 __credits__ = ["Lewis Christopher Brand", "Ayse Kucukyilmaz", "Simon Green"]
