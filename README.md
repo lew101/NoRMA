@@ -1,4 +1,4 @@
-# NoRMA
+# The NoRMA (Notingham Robotic Mobility Assistant) platform
 
 ## Introduction
 The NoRMA (Notingham Robotic Mobility Assistant) platform is a solution to the high skill and high price barrier for assistive robotics research. NoRMA allows researchers, and users with soldering and basic programming skills, the ability to convert an off-the-shelf powered wheelchair into a ROS compatible research platform at a significantly reduced cost compared to autonomous wheelchairs. The NoRMA platform is ideal for further research into control mechanisms and algorithms for smart wheelchairs and the offordability of the platform allows for the creation of multiple research systems for the price of a single commercial one. 
@@ -103,6 +103,12 @@ The current workaround is to run DOS2UNIX on these files and make them executabl
 Pull requests are welcome but may not be looked at quickly. For major changes or bugs, please open an issue first to discuss what you would like to change.
 
 Any unit tests that simulate I2C connectivity would be _very_ welcome.
+
+# Authors and acknowledgement
+
+- Lewis Brand - lewisbrand.56@gmail.com
+- Simon Green - sgreen@nottingham.ac.uk
+- Ayse Kucukyilmaz - Ayse.Kucukyilmaz@nottingham.ac.uk
 
 ## License
 [ECL-2.0](http://www.osedu.org/licenses/ECL-2.0)
