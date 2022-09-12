@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>wheelchair_virtual_joystick_driver</name>
-  <version>0.0.2</version>
+  <version>1.0.0</version>
   <description>Package for the NoRMA virtual joystick driver</description>
 
-  <maintainer email="lewis.brand@nottingham.ac.uk">Lewis brand</maintainer>
+  <maintainer email="lewisbrand.56@gmail.com">Lewis Christopher Brand</maintainer>
   <license>ECL-2.0</license>
   <url type="website">http://www.nottingham.ac.uk</url>
-  <author  email="lewis.brand@nottingham.ac.uk">Lewis brand</author>
+  <author  email="lewisbrand.56@gmail.com">Lewis Christopher Brand</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
