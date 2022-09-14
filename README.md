@@ -107,7 +107,7 @@ Any unit tests that simulate I2C connectivity would be _very_ welcome.
 # Authors and acknowledgement
 
 - Lewis Brand - lewisbrand.56@gmail.com
-- Simon Green - sgreen@nottingham.ac.uk
+- Simon Green - simon.castle-green2@nottingham.ac.uk
 - Ayse Kucukyilmaz - Ayse.Kucukyilmaz@nottingham.ac.uk
 
 ## License
