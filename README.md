@@ -111,5 +111,5 @@ Any unit tests that simulate I2C connectivity would be _very_ welcome.
 - Ayse Kucukyilmaz - Ayse.Kucukyilmaz@nottingham.ac.uk
 
 ## License
-[ECL-2.0](http://www.osedu.org/licenses/ECL-2.0)
+[ECL-2.0](https://opensource.org/licenses/ECL-2.0)
 
